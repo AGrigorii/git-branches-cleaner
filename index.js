@@ -3,13 +3,13 @@ const argv = require('yargs')
     .options({
         'mode': {
             alias: 'm',
-            description: 'show or delete old branches',
+            description: 'Choose mode of execution',
             choices: ['show', 'delete'],
             default: 'show'
         },
         'older-than': {
             alias: 'o',
-            description: 'Process branches older than (in days)',
+            description: 'Consider branches, which last commit date was older than chosen days ago',
             default: 90,
             type: 'number'
         }
