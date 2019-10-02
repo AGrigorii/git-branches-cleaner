@@ -40,12 +40,12 @@ function ex(command, isEmptyStdoutGood = true) {
 
     if (!isEmptyStdoutGood && !result) {
         exitCode = 1;
-        console.log(`There is no output for command ${command}`);
+        console.log(`There is no output for command ${ command }`);
     }
 
     return {
         exitCode,
-        data: result.toString()
+        data: result && result.toString()
     };
 }
 
@@ -71,7 +71,7 @@ function getListOfRemoteBranches(excludedRegex) {
 }
 
 function getLastCommitDate(branch) {
-    const command = `git log ${branch} -1 --format="%ct"`;
+    const command = `git log ${ branch } -1 --format="%ct"`;
     return parseInt(ex(command).data);
 }
 
@@ -82,18 +82,19 @@ function filterByDate(branches, maxDiff) {
 
 function deleteRemoteBranch(branch) {
     branch = branch.replace('origin/', '');
-    const command = `git push --delete origin ${branch}`;
-    ex(command);
+    const command = `git push --delete origin ${ branch }`;
+    const res = ex(command);
+    console.log(res.data);
 }
 
 function deleteOldBranches(branches) {
     branches.forEach(x => deleteRemoteBranch(x));
 }
 
-(function main(argv){
+(function main(argv) {
     let exitCode = checkGitRepoExists() || checkGitRemoteRepoExists() || gitFetchAll();
     if (exitCode) {
-        console.log(`script executed with code: ${exitCode}`);
+        console.log(`script executed with code: ${ exitCode }`);
         return;
     }
 
