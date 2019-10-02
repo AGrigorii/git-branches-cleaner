@@ -9,7 +9,7 @@ const argv = require('yargs')
         },
         'older-than': {
             alias: 'o',
-            describe: 'Process branches older than (in days)',
+            description: 'Process branches older than (in days)',
             default: 90,
             type: 'number'
         }
@@ -23,6 +23,8 @@ const argv = require('yargs')
     })
     .locale('en')
     .help()
+    .alias('help', 'h')
+    .alias('version', 'v')
     .argv;
 
 const exec = require('child_process').execSync;
