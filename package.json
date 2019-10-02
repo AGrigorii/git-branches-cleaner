@@ -1,6 +1,6 @@
 {
   "name": "git-branches-cleaner",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "tools for deleting old git branches",
   "main": "index.js",
   "scripts": {
@@ -25,8 +25,10 @@
   "bin": {
     "git-branches-cleaner": "./index.js"
   },
-  "devDependencies": {
-    "@types/yargs": "13.0.3",
+  "dependencies": {
     "yargs": "14.0.0"
+  },
+  "devDependencies": {
+    "@types/yargs": "13.0.3"
   }
 }

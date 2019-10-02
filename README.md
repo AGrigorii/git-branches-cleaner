@@ -19,3 +19,5 @@ Create file with branches older than `5` days: `git-branches-cleaner -o 5 > outp
 
 # Changelog
 `0.0.1` Initial version
+
+`1.0.0` Fix package.json dependencies
