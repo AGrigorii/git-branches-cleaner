@@ -27,12 +27,23 @@ const argv = require('yargs')
     .alias('version', 'v')
     .argv;
 
-const BLUE_COLOR = '\x1b[44m';
-const RED_COLOR = '\x1b[41m';
+const RED_FONT_COLOR = '\x1b[31m';
+const GREEN_FONT_COLOR = '\x1b[32m';
+const YELLOW_FONT_COLOR = '\x1b[33m';
+const BLUE_FONT_COLOR = '\x1b[34m';
+const MAGENTA_FONT_COLOR = '\x1b[35m';
+
+const RED_BG_COLOR = '\x1b[41m';
+const YELLOW_BG_COLOR = '\x1b[43m';
+const WHITE_BG_COLOR = '\x1b[47m';
+
+const RESET_COLOR = '\x1b[0m';
+
+function highlightText(text, color) {
+    return `${ color }${ text }${ RESET_COLOR }`;
+}
 
 function highlightedLog(color, message) {
-    const defaultColor = '\x1b[0m';
-    console.log('\n');
     console.log(color, message, defaultColor);
 }
 
@@ -76,8 +87,7 @@ function getListOfRemoteBranches(excludedRegex) {
 }
 
 function gitFetchAll() {
-    highlightedLog(BLUE_COLOR, '### FETCHING DATA FROM REMOTE REPOSITORY ###');
-    return ex('git fetch --all').exitCode;
+    return ex('git fetch --all --quiet --prune').exitCode;
 }
 
 function getLastCommitDate(branch) {
@@ -98,8 +108,22 @@ function deleteRemoteBranch(branch) {
 }
 
 function deleteOldBranches(branches) {
-    highlightedLog(RED_COLOR, '### START OF DELETING REMOTE BRANCHES ###');
+    highlightedLog(RED_BG_COLOR, '### START OF DELETING REMOTE BRANCHES ###');
     branches.forEach(x => deleteRemoteBranch(x));
+}
+
+function fullBranchInfo(branch) {
+    const command = `git log ${ branch } -1 --format="%cr%n%an%n%cn%n%ct"`;
+    const res = ex(command);
+    const [date, author, committer, timestamp] = res.data.split('\n');
+    return {
+        branchInfo: `${ highlightText(branch, MAGENTA_FONT_COLOR) }` +
+        ` Last commit was: ${ highlightText(date, BLUE_FONT_COLOR) }` +
+        ` Author: ${ highlightText(author, RED_FONT_COLOR) }` +
+        ` Committer: ${ highlightText(committer, GREEN_FONT_COLOR) }`,
+        timestamp: timestamp,
+        branchName: branch
+    }
 }
 
 (function main(argv) {
@@ -109,13 +133,13 @@ function deleteOldBranches(branches) {
         return;
     }
 
-    const remoteBranches = getListOfRemoteBranches(/(master|release|HEAD)/);
+    const remoteBranches = getListOfRemoteBranches(/(master|release|HEAD|develop)/);
 
     const maxDiff = argv.olderThan * 24 * 60 * 60;
     const oldBranches = filterByDate(remoteBranches, maxDiff);
 
-    highlightedLog(BLUE_COLOR, `### LIST OF BRANCHES, WHICH ARE OLDER THAN ${ argv.olderThan } DAY(S) ###`);
-    oldBranches.forEach(x => console.log(x));
+    //highlightedLog(BLUE_COLOR, `### LIST OF BRANCHES, WHICH ARE OLDER THAN ${ argv.olderThan } DAY(S) ###`);
+    const oldBranchesWithInfo = oldBranches.map(x => fullBranchInfo(x)).sort((x, y) => x.timeStamp - y.timeStamp);
 
     if (argv.mode === 'show') {
         return;
