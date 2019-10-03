@@ -27,26 +27,6 @@ const argv = require('yargs')
     .alias('version', 'v')
     .argv;
 
-const RED_FONT_COLOR = '\x1b[31m';
-const GREEN_FONT_COLOR = '\x1b[32m';
-const YELLOW_FONT_COLOR = '\x1b[33m';
-const BLUE_FONT_COLOR = '\x1b[34m';
-const MAGENTA_FONT_COLOR = '\x1b[35m';
-
-const RED_BG_COLOR = '\x1b[41m';
-const YELLOW_BG_COLOR = '\x1b[43m';
-const WHITE_BG_COLOR = '\x1b[47m';
-
-const RESET_COLOR = '\x1b[0m';
-
-function highlightText(text, color) {
-    return `${ color }${ text }${ RESET_COLOR }`;
-}
-
-function highlightedLog(color, message) {
-    console.log(color, message, defaultColor);
-}
-
 const exec = require('child_process').execSync;
 
 function ex(command, isEmptyStdoutGood = true) {
@@ -108,7 +88,7 @@ function deleteRemoteBranch(branch) {
 }
 
 function deleteOldBranches(branches) {
-    highlightedLog(RED_BG_COLOR, '### START OF DELETING REMOTE BRANCHES ###');
+    console.log('\x1b[33m###\x1b[0m \x1b[31mSTART OF DELETING REMOTE BRANCHES\x1b[0m \x1b[33m###\x1b[0m');
     branches.forEach(x => deleteRemoteBranch(x));
 }
 
@@ -117,13 +97,12 @@ function fullBranchInfo(branch) {
     const res = ex(command);
     const [date, author, committer, timestamp] = res.data.split('\n');
     return {
-        branchInfo: `${ highlightText(branch, MAGENTA_FONT_COLOR) }` +
-        ` Last commit was: ${ highlightText(date, BLUE_FONT_COLOR) }` +
-        ` Author: ${ highlightText(author, RED_FONT_COLOR) }` +
-        ` Committer: ${ highlightText(committer, GREEN_FONT_COLOR) }`,
+        ['Last commit']: date,
+        Author: author,
+        Committer: committer,
         timestamp: timestamp,
-        branchName: branch
-    }
+        ['Branch Name']: branch
+    };
 }
 
 (function main(argv) {
@@ -136,14 +115,19 @@ function fullBranchInfo(branch) {
     const remoteBranches = getListOfRemoteBranches(/(master|release|HEAD|develop)/);
 
     const maxDiff = argv.olderThan * 24 * 60 * 60;
-    const oldBranches = filterByDate(remoteBranches, maxDiff);
+    const oldBranchNames = filterByDate(remoteBranches, maxDiff);
 
-    //highlightedLog(BLUE_COLOR, `### LIST OF BRANCHES, WHICH ARE OLDER THAN ${ argv.olderThan } DAY(S) ###`);
-    const oldBranchesWithInfo = oldBranches.map(x => fullBranchInfo(x)).sort((x, y) => x.timeStamp - y.timeStamp);
-
-    if (argv.mode === 'show') {
+    if (oldBranchNames.length === 0) {
+        console.log(`\x1b[31mTHERE ARE NO BRANCHES OLDER THAN \x1b[32m${ argv.olderThan } DAY${argv.olderThan === 1 ? '' : 'S'}\x1b[0m`);
         return;
     }
 
-    deleteOldBranches(oldBranches);
+    const oldBranchesWithInfo = oldBranchNames.map(x => fullBranchInfo(x)).sort((x, y) => x.timeStamp - y.timeStamp);
+
+    if (argv.mode === 'show') {
+        console.table(oldBranchesWithInfo, ['Branch Name', 'Last commit', 'Author', 'Committer']);
+        return;
+    }
+
+    deleteOldBranches(oldBranchNames);
 })(argv);

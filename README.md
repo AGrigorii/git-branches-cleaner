@@ -9,8 +9,6 @@ Show branches older than `15` days: `git-branches-cleaner --mode show --older-th
 
 Delete branches older than `100` days: `git-branches-cleaner -m delete -o 100`
 
-Create file with branches older than `5` days: `git-branches-cleaner -o 5 > output.txt`
-
 ## Options
 * `--version, -h` Show version number
 * `--mode, -m` Choose mode of execution `(show | delete)` `[defult: show]`
@@ -21,9 +19,9 @@ Create file with branches older than `5` days: `git-branches-cleaner -o 5 > outp
 * You should call script from the root of some git directory
 * Only remote branches can be affected
 * Only remote repo with name `origin` can be affected
-* Branch will be skipped, if contains `master` or `release` as substring
+* Branch will be skipped, if contains `master`, `release` or `develop` as substring
 * If some branch should be restored, you can do it by command `git push origin -u <branch_name>` (such branch should exists in local git repository)
-* Branch called old, if the last commit was `x` days ago
+* Branch is calling old, if the last commit was `x` days ago
 
 ## Contact
 If you have some thoughts or want to get some feature, please, contact me at <a href="https://t.me/agrigorii/">Telegram @agrigorii</a>.
