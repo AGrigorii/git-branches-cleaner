@@ -25,9 +25,5 @@ Create file with branches older than `5` days: `git-branches-cleaner -o 5 > outp
 * If some branch should be restored, you can do it by command `git push origin -u <branch_name>` (such branch should exists in local git repository)
 * Branch called old, if the last commit was `x` days ago
 
-# Changelog
-`0.0.1` Initial version
-
-`1.0.0` Fix package.json dependencies
-
-`1.0.1` Readme update, logging fetch and delete events into console
+## Contact
+If you have some thoughts or want to get some feature, please, contact me at <a href="https://t.me/agrigorii/">Telegram @agrigorii</a>.
