@@ -27,6 +27,15 @@ const argv = require('yargs')
     .alias('version', 'v')
     .argv;
 
+const BLUE_COLOR = '\x1b[44m';
+const RED_COLOR = '\x1b[41m';
+
+function highlightedLog(color, message) {
+    const defaultColor = '\x1b[0m';
+    console.log('\n');
+    console.log(color, message, defaultColor);
+}
+
 const exec = require('child_process').execSync;
 
 function ex(command, isEmptyStdoutGood = true) {
@@ -57,10 +66,6 @@ function checkGitRemoteRepoExists() {
     return ex('git remote', false).exitCode;
 }
 
-function gitFetchAll() {
-    return ex('git fetch --all').exitCode;
-}
-
 function getListOfRemoteBranches(excludedRegex) {
     return ex('git branch --remote', true)
         .data
@@ -68,6 +73,11 @@ function getListOfRemoteBranches(excludedRegex) {
         .filter(x => x)
         .map(x => x.trim())
         .filter(x => !excludedRegex || !x.match(excludedRegex));
+}
+
+function gitFetchAll() {
+    highlightedLog(BLUE_COLOR, '### FETCHING DATA FROM REMOTE REPOSITORY ###');
+    return ex('git fetch --all').exitCode;
 }
 
 function getLastCommitDate(branch) {
@@ -88,6 +98,7 @@ function deleteRemoteBranch(branch) {
 }
 
 function deleteOldBranches(branches) {
+    highlightedLog(RED_COLOR, '### START OF DELETING REMOTE BRANCHES ###');
     branches.forEach(x => deleteRemoteBranch(x));
 }
 
@@ -103,9 +114,12 @@ function deleteOldBranches(branches) {
     const maxDiff = argv.olderThan * 24 * 60 * 60;
     const oldBranches = filterByDate(remoteBranches, maxDiff);
 
+    highlightedLog(BLUE_COLOR, `### LIST OF BRANCHES, WHICH ARE OLDER THAN ${ argv.olderThan } DAY(S) ###`);
+    oldBranches.forEach(x => console.log(x));
+
     if (argv.mode === 'show') {
-        oldBranches.forEach(x => console.log(x));
         return;
     }
+
     deleteOldBranches(oldBranches);
 })(argv);
