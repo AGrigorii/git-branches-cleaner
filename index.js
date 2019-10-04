@@ -1,11 +1,15 @@
 #!/usr/bin/env node
+const MODES = {
+    show: 'show',
+    ['delete']: 'delete'
+};
 const argv = require('yargs')
     .options({
         'mode': {
             alias: 'm',
             description: 'Choose mode of execution',
-            choices: ['show', 'delete'],
-            default: 'show'
+            choices: Object.keys(MODES),
+            default: MODES.show
         },
         'older-than': {
             alias: 'o',
@@ -118,13 +122,15 @@ function fullBranchInfo(branch) {
     const oldBranchNames = filterByDate(remoteBranches, maxDiff);
 
     if (oldBranchNames.length === 0) {
-        console.log(`\x1b[31mTHERE ARE NO BRANCHES OLDER THAN \x1b[32m${ argv.olderThan } DAY${argv.olderThan === 1 ? '' : 'S'}\x1b[0m`);
+        console.log(`\x1b[31mTHERE ARE NO BRANCHES OLDER THAN \x1b[32m${ argv.olderThan } DAY${ argv.olderThan === 1
+            ? ''
+            : 'S' }\x1b[0m`);
         return;
     }
 
     const oldBranchesWithInfo = oldBranchNames.map(x => fullBranchInfo(x)).sort((x, y) => x.timeStamp - y.timeStamp);
 
-    if (argv.mode === 'show') {
+    if (argv.mode === MODES.show) {
         console.table(oldBranchesWithInfo, ['Branch Name', 'Last commit', 'Author', 'Committer']);
         return;
     }
