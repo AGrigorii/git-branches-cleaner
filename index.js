@@ -128,7 +128,7 @@ function fullBranchInfo(branch) {
         return;
     }
 
-    const oldBranchesWithInfo = oldBranchNames.map(x => fullBranchInfo(x)).sort((x, y) => x.timeStamp - y.timeStamp);
+    const oldBranchesWithInfo = oldBranchNames.map(x => fullBranchInfo(x)).sort((x, y) => x.timestamp - y.timestamp);
 
     if (argv.mode === MODES.show) {
         console.table(oldBranchesWithInfo, ['Branch Name', 'Last commit', 'Author', 'Committer']);

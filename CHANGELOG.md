@@ -1,4 +1,6 @@
 # Changelog
+`2.0.1` Fix sorting by last commit
+
 `2.0.0`
 * Minimal `Node.js` version is `v10.0.0`
 * Fetching output are not showing anymore
