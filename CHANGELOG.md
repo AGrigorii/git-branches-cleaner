@@ -1,4 +1,8 @@
 # Changelog
+`2.0.2` 
+* Some performance improvements of git using
+* Updated readme 
+
 `2.0.1` Fix sorting by last commit
 
 `2.0.0`

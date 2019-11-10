@@ -32,6 +32,8 @@ const argv = require('yargs')
     .argv;
 
 const exec = require('child_process').execSync;
+const fs = require('fs');
+const path = require('path');
 
 function ex(command, isEmptyStdoutGood = true) {
     let exitCode = 0;
@@ -54,34 +56,51 @@ function ex(command, isEmptyStdoutGood = true) {
 }
 
 function checkGitRepoExists() {
-    return ex('git status').exitCode;
+    if (fs.existsSync(path.resolve(process.cwd(), '.git'))) {
+        return 0;
+    }
+    logError('Current location does not contain git repository in the root.');
+    return -1;
 }
 
 function checkGitRemoteRepoExists() {
-    return ex('git remote', false).exitCode;
-}
-
-function getListOfRemoteBranches(excludedRegex) {
-    return ex('git branch --remote', true)
-        .data
-        .split('\n')
-        .filter(x => x)
-        .map(x => x.trim())
-        .filter(x => !excludedRegex || !x.match(excludedRegex));
+    if (!fs.existsSync(path.resolve(process.cwd(), '.git/refs/remotes')) ||
+        !fs.existsSync(path.resolve(process.cwd(), '.git/refs/remotes/origin'))) {
+        logError('Current git repository does not contain reference to "origin" remote repository.');
+        return -1;
+    }
+    return 0;
 }
 
 function gitFetchAll() {
     return ex('git fetch --all --quiet --prune').exitCode;
 }
 
-function getLastCommitDate(branch) {
-    const command = `git log ${ branch } -1 --format="%ct"`;
-    return parseInt(ex(command).data);
+function getAllRemotes(excludedRegex) {
+    const data = ex(`git for-each-ref --format='%(refname)#_#%(committerdate:unix)#_#%(authorname)#_#%(committername)#_#%(committerdate:relative)' refs/remotes/origin`)
+        .data
+        .split('\n')
+        .map(x => x.slice(1, -1).replace('refs/remotes/', ''));
+    return data.map(x => {
+        const [branchName, timestamp, authorName, committerName, relativeDate] = x.split('#_#');
+        return {
+            ['Branch Name']: branchName,
+            timestamp: parseInt(timestamp),
+            ['Author']: authorName,
+            ['Committer']: committerName,
+            ['Last commit']: relativeDate
+        };
+    }).filter(x => x['Branch Name'] && (!excludedRegex || !x['Branch Name'].match(excludedRegex)));
 }
 
 function filterByDate(branches, maxDiff) {
     const timestamp = Math.round(new Date().getTime() / 1000);
-    return branches.filter(x => timestamp - getLastCommitDate(x) > maxDiff);
+    return branches.filter(x => timestamp - x.timestamp > maxDiff);
+}
+
+function deleteOldBranches(branches) {
+    console.log('\x1b[33m###\x1b[0m \x1b[31mSTART OF DELETING REMOTE BRANCHES\x1b[0m \x1b[33m###\x1b[0m');
+    branches.forEach(x => deleteRemoteBranch(x['Branch Name']));
 }
 
 function deleteRemoteBranch(branch) {
@@ -91,24 +110,6 @@ function deleteRemoteBranch(branch) {
     console.log(res.data);
 }
 
-function deleteOldBranches(branches) {
-    console.log('\x1b[33m###\x1b[0m \x1b[31mSTART OF DELETING REMOTE BRANCHES\x1b[0m \x1b[33m###\x1b[0m');
-    branches.forEach(x => deleteRemoteBranch(x));
-}
-
-function fullBranchInfo(branch) {
-    const command = `git log ${ branch } -1 --format="%cr%n%an%n%cn%n%ct"`;
-    const res = ex(command);
-    const [date, author, committer, timestamp] = res.data.split('\n');
-    return {
-        ['Last commit']: date,
-        Author: author,
-        Committer: committer,
-        timestamp: timestamp,
-        ['Branch Name']: branch
-    };
-}
-
 (function main(argv) {
     let exitCode = checkGitRepoExists() || checkGitRemoteRepoExists() || gitFetchAll();
     if (exitCode) {
@@ -116,24 +117,27 @@ function fullBranchInfo(branch) {
         return;
     }
 
-    const remoteBranches = getListOfRemoteBranches(/(master|release|HEAD|develop)/);
-
+    const allRemotes = getAllRemotes(/(master|release|HEAD|develop)/);
     const maxDiff = argv.olderThan * 24 * 60 * 60;
-    const oldBranchNames = filterByDate(remoteBranches, maxDiff);
+    const oldBranches = filterByDate(allRemotes, maxDiff);
 
-    if (oldBranchNames.length === 0) {
+    if (oldBranches.length === 0) {
         console.log(`\x1b[31mTHERE ARE NO BRANCHES OLDER THAN \x1b[32m${ argv.olderThan } DAY${ argv.olderThan === 1
             ? ''
             : 'S' }\x1b[0m`);
         return;
     }
 
-    const oldBranchesWithInfo = oldBranchNames.map(x => fullBranchInfo(x)).sort((x, y) => x.timestamp - y.timestamp);
+    oldBranches.sort((x, y) => x.timestamp - y.timestamp);
 
     if (argv.mode === MODES.show) {
-        console.table(oldBranchesWithInfo, ['Branch Name', 'Last commit', 'Author', 'Committer']);
+        console.table(oldBranches, ['Branch Name', 'Last commit', 'Author', 'Committer']);
         return;
     }
 
-    deleteOldBranches(oldBranchNames);
+    deleteOldBranches(oldBranches);
 })(argv);
+
+function logError(message) {
+    console.log(`\x1b[31m${ message }\x1b[0m`);
+}

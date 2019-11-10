@@ -1,6 +1,7 @@
 # Git-branches-cleaner
 Tool for deleting old branches from your remote git repository
 
+From version 2.0.0 it is required the node.js version >= 10.0.0
 ## Install package
 `npm install -g git-branches-cleaner`
 
