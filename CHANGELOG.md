@@ -1,4 +1,7 @@
 # Changelog
+`2.0.3`
+bump deps
+
 `2.0.2` 
 * Some performance improvements of git using
 * Updated readme 
