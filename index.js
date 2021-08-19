@@ -80,7 +80,7 @@ function getAllRemotes(excludedRegex) {
     const data = ex(`git for-each-ref --format='%(refname)#_#%(committerdate:unix)#_#%(authorname)#_#%(committername)#_#%(committerdate:relative)' refs/remotes/origin`)
         .data
         .split('\n')
-        .map(x => x.slice(1, -1).replace('refs/remotes/', ''));
+        .map(x => x.replace(/'/g, '').replace('refs/remotes/', ''));
     return data.map(x => {
         const [branchName, timestamp, authorName, committerName, relativeDate] = x.split('#_#');
         return {

@@ -1,4 +1,9 @@
 # Changelog
+
+`3.0.0`
+* Fix for MacOS
+* Drop support Node 10, current minimal version is the 12th
+
 `2.0.3`
 bump deps
 
