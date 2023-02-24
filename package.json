@@ -1,6 +1,6 @@
 {
   "name": "git-branches-cleaner",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "tools for deleting old git branches",
   "main": "index.js",
   "scripts": {
