@@ -31,9 +31,9 @@ const argv = require('yargs')
     .alias('version', 'v')
     .argv;
 
-const exec = require('child_process').execSync;
-const fs = require('fs');
-const path = require('path');
+const exec = require('node:child_process').execSync;
+const fs = require('node:fs');
+const path = require('node:path');
 
 function ex(command, isEmptyStdoutGood = true) {
     let exitCode = 0;
@@ -105,7 +105,7 @@ function deleteOldBranches(branches) {
 
 function deleteRemoteBranch(branch) {
     branch = branch.replace('origin/', '');
-    const command = `git push --delete origin ${ branch }`;
+    const command = `git push --delete origin ${ branch } --no-verify`;
     const res = ex(command);
     console.log(res.data);
 }
@@ -117,7 +117,7 @@ function deleteRemoteBranch(branch) {
         return;
     }
 
-    const allRemotes = getAllRemotes(/(master|release|HEAD|develop)/);
+    const allRemotes = getAllRemotes(/^(master|release|HEAD|develop|main)$/);
     const maxDiff = argv.olderThan * 24 * 60 * 60;
     const oldBranches = filterByDate(allRemotes, maxDiff);
 

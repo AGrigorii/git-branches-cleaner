@@ -26,10 +26,10 @@
     "git-branches-cleaner": "./index.js"
   },
   "dependencies": {
-    "yargs": "17.1.1"
+    "yargs": "17.7.1"
   },
   "devDependencies": {
-    "@types/yargs": "17.0.2"
+    "@types/yargs": "17.0.22"
   },
   "engines": {
     "node": ">= 12.0.0"

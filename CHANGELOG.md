@@ -1,5 +1,9 @@
 # Changelog
 
+`3.1.0`
+* `--no-verify` option is added for remote branch deleting command
+* `/^(master|release|HEAD|develop|main)$/` regex is used as ignore pattern
+
 `3.0.0`
 * Fix for MacOS
 * Drop support Node 10, current minimal version is the 12th
